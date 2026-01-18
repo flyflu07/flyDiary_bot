@@ -5,13 +5,14 @@ import (
 	"github.com/jackc/pgx/v5"
 	"log"
 	"strconv"
-	model2 "tg_bot/internal/user/model"
+	q "tg_bot/internal/storage/query"
+	"tg_bot/internal/user/model"
 	"time"
 )
 
-func findMessagesByUserIDAndDate(userID int64, date time.Time) []model2.DiaryEntry {
+func findMessagesByUserIDAndDate(userID int64, date time.Time) []model.DiaryEntry {
 	nextday := date.Add(24 * time.Hour)
-	query := "SELECT d.id, d.text, d.recording_time + (interval '1 hour' * p.user_timezone) FROM diary d JOIN profile p ON d.id = p.id WHERE p.id = @id AND d.recording_time >= @date  AND d.recording_time < @nextday"
+	query := q.FindMessageQuery
 	args := &pgx.NamedArgs{
 		"id":      userID,
 		"date":    date,
@@ -22,10 +23,10 @@ func findMessagesByUserIDAndDate(userID int64, date time.Time) []model2.DiaryEnt
 		fmt.Println("Заплыв не удался")
 	}
 
-	var allMessagesByDate []model2.DiaryEntry
+	var allMessagesByDate []model.DiaryEntry
 
 	for rows.Next() {
-		var message model2.DiaryEntry
+		var message model.DiaryEntry
 		err = rows.Scan(&message.Id, &message.Message, &message.Time)
 		if err != nil {
 			fmt.Println("Закладку спиздили или не нашли")
@@ -44,7 +45,7 @@ func saveDiary(id int64, message string, user_time time.Time, date time.Time) {
 		"user_time": user_time,
 		"date":      date,
 	}
-	queryExec := "insert into diary values(@id, @message, @user_time, @date);"
+	queryExec := q.SaveDiaryQuery
 	_, err := pool.Exec(ctx, queryExec, args)
 	if err != nil {
 		fmt.Println("Карась уплыл")
@@ -52,7 +53,7 @@ func saveDiary(id int64, message string, user_time time.Time, date time.Time) {
 }
 
 func getUniqueYearsOfDiaryEntries(UserID int64) []string {
-	query := "select distinct extract(year from recording_time ) from diary where id=@id order by 1;"
+	query := q.GetUniqueYearsQuery
 	var args = &pgx.NamedArgs{"id": UserID}
 	rows, err := pool.Query(ctx, query, args)
 	if err != nil {
@@ -72,8 +73,8 @@ func getUniqueYearsOfDiaryEntries(UserID int64) []string {
 }
 
 func getUniqueMonthsOfDiaryEntries(UserID int64) []string {
-	query := "select distinct extract(month from recording_time ) from diary where id=@id and extract(year from recording_time )=@year order by 1;"
-	var args = &pgx.NamedArgs{"id": UserID, "year": model2.Date[UserID].Year}
+	query := q.GetUniqueMonthsQuery
+	var args = &pgx.NamedArgs{"id": UserID, "year": model.Date[UserID].Year}
 	rows, err := pool.Query(ctx, query, args)
 	if err != nil {
 		log.Println("0x11111 -> ", err)
@@ -91,8 +92,8 @@ func getUniqueMonthsOfDiaryEntries(UserID int64) []string {
 }
 
 func getUniqueDaysOfDiaryEntries(UserID int64) []string {
-	query := "select distinct extract(day from recording_time ) from diary where id=@id and extract(year from recording_time )=@year and extract(month from recording_time)=@month order by 1;"
-	var args = &pgx.NamedArgs{"id": UserID, "year": model2.Date[UserID].Year, "month": model2.Date[UserID].Month}
+	query := q.GetUniqueDaysQuery
+	var args = &pgx.NamedArgs{"id": UserID, "year": model.Date[UserID].Year, "month": model.Date[UserID].Month}
 	rows, err := pool.Query(ctx, query, args)
 	if err != nil {
 		log.Println("0x714e8 -> ", err)

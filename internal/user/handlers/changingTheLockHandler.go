@@ -46,17 +46,3 @@ func LockDiaryCommandHandler(ctx context.Context, b *bot.Bot, update *models.Upd
 		log.Println("0x4f43c -> ", err)
 	}
 }
-
-//func UnlockDiaryButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-//	b.EditMessageText(ctx, &bot.EditMessageTextParams{
-//		ChatID:     utilsUpdate.ExtractChatID(update),
-//		MessageID:   utilsUpdate.ExtractChatID(update),
-//		Text:        "Введите свой пароль:",
-//		ReplyMarkup: &models.InlineKeyboardMarkup{InlineKeyboard: keyboards.MenuWithLock()},
-//	})
-//	b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
-//		CallbackQueryID: utilsUpdate.ExtractCallbackQueryID(update),
-//		Text:            "pososee",
-//	})
-//
-//}

@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"log"
+	q "tg_bot/internal/storage/query"
 )
 
 func passwordCheck(id int64) bool {
-	query := "select exists(select 1 from profile where id=@id and ispassword)"
+	query := q.PasswordCheckQuery
 	var args = &pgx.NamedArgs{"id": id}
 	var isPassword bool
 	err := pool.QueryRow(ctx, query, args).Scan(&isPassword)
@@ -21,7 +22,7 @@ func passwordCheck(id int64) bool {
 
 func createProfile(id int64, password string) {
 	fmt.Println(password)
-	query := "insert into profile(id, ispassword, passmd5) values (@id, true, @password);"
+	query := q.CreateProfileQuery
 	args := &pgx.NamedArgs{"id": id, "password": password}
 	_, err := pool.Exec(ctx, query, args)
 	if err != nil {
@@ -30,7 +31,7 @@ func createProfile(id int64, password string) {
 }
 
 func getPassword(id int64) string {
-	query := "select passmd5 from profile p  where p.id = @id;"
+	query := q.GetPasswordQuery
 	var args = &pgx.NamedArgs{"id": id}
 	var password string
 	err := pool.QueryRow(ctx, query, args).Scan(&password)
@@ -41,7 +42,7 @@ func getPassword(id int64) string {
 }
 
 func saveTimeZoneInDB(id int64, timezone int) {
-	query := "update profile set timezone=@timezone where id=@id"
+	query := q.SaveTimeZone
 	args := &pgx.NamedArgs{"id": id, "timezone": timezone}
 	_, err := pool.Exec(ctx, query, args)
 	if err != nil {
@@ -50,7 +51,7 @@ func saveTimeZoneInDB(id int64, timezone int) {
 }
 
 func getTimeZone(id int64) string {
-	query := "select timezone from profile where id=@id;"
+	query := q.GetTimeZoneQuery
 	var args = &pgx.NamedArgs{"id": id}
 	var timezone string
 	err := pool.QueryRow(ctx, query, args).Scan(&timezone)
