@@ -6,6 +6,7 @@ import (
 	"github.com/go-telegram/bot"
 	"os"
 	"os/signal"
+	"tg_bot/config"
 	"tg_bot/internal/bot"
 	handlers2 "tg_bot/internal/user/handlers"
 )
@@ -36,7 +37,7 @@ func main() {
 		bot.WithCallbackQueryDataHandler("clearall", bot.MatchTypeExact, handlers2.ClearAllHandler),
 	}
 
-	b, err := bot.New("8594544690:AAGA0Mxw3rmc1Bs8lGfJotxE2vnnb_k7frc", opts...)
+	b, err := bot.New(config.GetEntranceToken(), opts...)
 	if nil != err {
 		// panics for the sake of simplicity.
 		// you should handle this error properly in your code.

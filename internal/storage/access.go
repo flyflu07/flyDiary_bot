@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
-	"tg_bot/config"
+	cfg "tg_bot/config"
 	"time"
 )
 
@@ -21,8 +21,8 @@ func init() {
 
 	// Get the zone name (e.g., "CET", "UTC", "PDT") and offset in seconds
 
-	connTemplate := "postgres://%s:%s@%s:%s/%s?options=-c%20TimeZone%3DAsia/Ekaterinburg"
-	connStr := fmt.Sprintf(connTemplate, config.Cfg["Username"], config.Cfg["Password"], config.Cfg["Host"], config.Cfg["Port"], config.Cfg["DBName"])
+	connTemplate := "postgres://%s:%s@%s:%d/%s"
+	connStr := fmt.Sprintf(connTemplate, cfg.GetPostgresUser(), cfg.GetPostgresPwd(), cfg.GetPostgresHost(), cfg.GetPostgresPort(), cfg.GetPostgresDb())
 	ctx = context.Background()
 
 	poolConfig, err := pgxpool.ParseConfig(connStr)
