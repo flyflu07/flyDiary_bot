@@ -6,10 +6,37 @@ import (
 	"github.com/go-telegram/bot/models"
 	"log"
 	"tg_bot/internal/storage"
+	"tg_bot/internal/user/keyboards"
 	"tg_bot/internal/user/model"
 	"tg_bot/internal/user/services"
 	"tg_bot/internal/utils/utilsUpdate"
 )
+
+func StartHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+
+	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID:      utilsUpdate.ExtractChatID(update),
+		Text:        "Пошел нахуй",
+		ReplyMarkup: &models.InlineKeyboardMarkup{InlineKeyboard: keyboards.StartButton()},
+	})
+	if err != nil {
+		log.Println("0xfdb4d -> ", err)
+	}
+}
+
+func LetsGoButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	model.ReplyChatIDConfirmationPassword[utilsUpdate.ExtractUserID(update)] = utilsUpdate.ExtractChatID(update)
+	model.ReplyMessageIDConfirmationPassword[utilsUpdate.ExtractUserID(update)] = utilsUpdate.ExtractMessageID(update)
+	_, err := b.EditMessageText(ctx, &bot.EditMessageTextParams{
+		ChatID:    utilsUpdate.ExtractChatID(update),
+		MessageID: utilsUpdate.ExtractMessageID(update),
+		Text:      "Придумайте хороший пароль:",
+	})
+	if err != nil {
+		log.Println("0x7224d -> ", err)
+	}
+
+}
 
 func YesButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	password := model.InfoAbUser[utilsUpdate.ExtractUserID(update)].Password

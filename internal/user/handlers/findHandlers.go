@@ -7,15 +7,13 @@ import (
 	"github.com/go-telegram/bot/models"
 	"log"
 	"tg_bot/internal/user/keyboards"
-	model2 "tg_bot/internal/user/model"
-	services2 "tg_bot/internal/user/services"
+	model "tg_bot/internal/user/model"
+	services "tg_bot/internal/user/services"
 	"tg_bot/internal/utils/utilsUpdate"
 )
 
 func MenuFindDateWithYearsHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	if services2.IsPasswordInMap(utilsUpdate.ExtractUserID(update)) {
-
-		fmt.Println(model2.Page[utilsUpdate.ExtractUserID(update)])
+	if services.IsPasswordInMap(utilsUpdate.ExtractUserID(update)) {
 
 		_, err := b.EditMessageText(ctx, &bot.EditMessageTextParams{
 			ChatID:      utilsUpdate.ExtractChatID(update),
@@ -52,7 +50,7 @@ func MenuFindDateWithMonthsHandler(ctx context.Context, b *bot.Bot, update *mode
 }
 
 func MenuFindDateWithDaysHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	fmt.Println(model2.Page[utilsUpdate.ExtractUserID(update)])
+	fmt.Println(model.Page[utilsUpdate.ExtractUserID(update)])
 
 	_, err := b.EditMessageText(ctx, &bot.EditMessageTextParams{
 		ChatID:      utilsUpdate.ExtractChatID(update),
@@ -67,28 +65,28 @@ func MenuFindDateWithDaysHandler(ctx context.Context, b *bot.Bot, update *models
 
 // 1
 func YearsButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	if model2.Date[utilsUpdate.ExtractUserID(update)] == nil {
-		model2.Date[utilsUpdate.ExtractUserID(update)] = &model2.DateForBD{}
+	if model.Date[utilsUpdate.ExtractUserID(update)] == nil {
+		model.Date[utilsUpdate.ExtractUserID(update)] = &model.DateForBD{}
 	}
 
-	model2.Date[utilsUpdate.ExtractUserID(update)].Year = update.CallbackQuery.Data[6:]
+	model.Date[utilsUpdate.ExtractUserID(update)].Year = update.CallbackQuery.Data[6:]
 	MenuFindDateWithMonthsHandler(ctx, b, update)
 }
 
 func MonthsButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
-	model2.Date[utilsUpdate.ExtractUserID(update)].Month = update.CallbackQuery.Data[7:]
+	model.Date[utilsUpdate.ExtractUserID(update)].Month = update.CallbackQuery.Data[7:]
 	MenuFindDateWithDaysHandler(ctx, b, update)
 }
 
 func DaysButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	model2.Date[utilsUpdate.ExtractUserID(update)].Day = update.CallbackQuery.Data[5:]
+	model.Date[utilsUpdate.ExtractUserID(update)].Day = update.CallbackQuery.Data[5:]
 
 	FinalMenuFindHandler(ctx, b, update)
 }
 
 func FinalMenuFindHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	messages, err := services2.GetMessage(utilsUpdate.ExtractUserID(update))
+	messages, err := services.GetMessage(utilsUpdate.ExtractUserID(update))
 	if err != nil {
 		log.Println("0xac733 -> ", err)
 		return
@@ -97,7 +95,7 @@ func FinalMenuFindHandler(ctx context.Context, b *bot.Bot, update *models.Update
 	for i, msg := range messages {
 		var message *models.Message
 		if i == len(messages)-1 {
-			decryptedText := services2.CryptoDecrypt(msg.Message, model2.InfoAbUser[utilsUpdate.ExtractUserID(update)].Password)
+			decryptedText := services.CryptoDecrypt(msg.Message, model.InfoAbUser[utilsUpdate.ExtractUserID(update)].Password)
 			_, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID:      utilsUpdate.ExtractChatID(update),
 				Text:        "*" + msg.Time.Format("15:04:05") + "*" + "\n" + decryptedText,
@@ -108,7 +106,7 @@ func FinalMenuFindHandler(ctx context.Context, b *bot.Bot, update *models.Update
 				log.Println("0x35212 -> ", err)
 			}
 		} else {
-			decryptedText := services2.CryptoDecrypt(msg.Message, model2.InfoAbUser[utilsUpdate.ExtractUserID(update)].Password)
+			decryptedText := services.CryptoDecrypt(msg.Message, model.InfoAbUser[utilsUpdate.ExtractUserID(update)].Password)
 			_, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID:    utilsUpdate.ExtractChatID(update),
 				Text:      "*" + msg.Time.Format("15:04:05") + "*" + "\n" + decryptedText,
@@ -118,7 +116,7 @@ func FinalMenuFindHandler(ctx context.Context, b *bot.Bot, update *models.Update
 				log.Println("0x35213 -> ", err)
 			}
 		}
-		model2.GetMessageForClear[utilsUpdate.ExtractUserID(update)] = append(model2.GetMessageForClear[utilsUpdate.ExtractUserID(update)], message.ID)
+		model.GetMessageForClear[utilsUpdate.ExtractUserID(update)] = append(model.GetMessageForClear[utilsUpdate.ExtractUserID(update)], message.ID)
 
 	}
 
@@ -140,7 +138,7 @@ func ClearAllHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	userID := utilsUpdate.ExtractUserID(update)
 	chatID := utilsUpdate.ExtractChatID(update)
 
-	for _, msgID := range model2.GetMessageForClear[userID] {
+	for _, msgID := range model.GetMessageForClear[userID] {
 		_, err := b.DeleteMessage(ctx, &bot.DeleteMessageParams{
 			ChatID:    chatID,
 			MessageID: msgID,
@@ -150,7 +148,7 @@ func ClearAllHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		}
 	}
 
-	delete(model2.GetMessageForClear, userID)
+	delete(model.GetMessageForClear, userID)
 
 	_, err := b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
 		CallbackQueryID: utilsUpdate.ExtractCallbackQueryID(update),
